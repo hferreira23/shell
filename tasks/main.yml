@@ -1,5 +1,5 @@
 ---
 - name: Shell config for Debian based systems
   ansible.builtin.import_tasks:
-    name: debian.yml
+    file: debian.yml
   when: ansible_facts['os_family'] == "Debian"
