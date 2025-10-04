@@ -1,0 +1,29 @@
+---
+- name: Install prereq packages
+  ansible.builtin.apt:
+    name:
+      - debian-archive-keyring
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - python3-debian
+    state: latest
+
+- name: Add fish repo
+  ansible.builtin.deb822_repository:
+    name: fish
+    types: deb
+    uris:
+      - http://download.opensuse.org/repositories/shells:/fish:/release:/4/Debian_13/
+    suites:
+      - "{{ ansible_distribution_release }}"
+    components:
+      - main
+    signed_by: https://download.opensuse.org/repositories/shells:fish:release:4/Debian_13/Release.key
+
+- name: Install fish shell
+  ansible.builtin.apt:
+    update_cache: true
+    name: fish
+    state: latest
