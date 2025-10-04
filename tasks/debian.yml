@@ -1,29 +1,79 @@
 ---
-- name: Install prereq packages
-  ansible.builtin.apt:
-    name:
-      - debian-archive-keyring
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg-agent
-      - python3-debian
-    state: latest
+- name: Pre-requisites
+  when: outer_item == "root"
+  block:
+    - name: Setting amd64 architecture
+      ansible.builtin.set_fact:
+        arch: amd64
+      when: ansible_architecture == "x86_64"
 
-- name: Add fish repo
-  ansible.builtin.deb822_repository:
-    name: fish
-    types: deb
-    uris:
-      - http://download.opensuse.org/repositories/shells:/fish:/release:/4/Debian_13/
-    suites:
-      - "{{ ansible_distribution_release }}"
-    components:
-      - main
-    signed_by: https://download.opensuse.org/repositories/shells:fish:release:4/Debian_13/Release.key
+    - name: Setting arm64 architecture
+      ansible.builtin.set_fact:
+        arch: arm64
+      when: ansible_architecture == "aarch64"
 
-- name: Install fish shell
-  ansible.builtin.apt:
-    update_cache: true
-    name: fish
-    state: latest
+    - name: Install prereq packages
+      ansible.builtin.apt:
+        name:
+          - debian-archive-keyring
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - python3-debian
+          - fzf
+          - ripgrep
+          - fd-find
+        state: latest
+
+    - name: Add fish repo
+      ansible.builtin.deb822_repository:
+        name: fish
+        types: deb
+        uris:
+          - http://download.opensuse.org/repositories/shells:/fish:/release:/4/Debian_13/
+        suites:
+          - "/"
+        components:
+          - ""
+        signed_by: https://download.opensuse.org/repositories/shells:fish:release:4/Debian_13/Release.key
+
+    - name: Install Zoxide
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          curl -sS https://webinstall.dev/zoxide | bash
+        args:
+          executable: /bin/bash
+
+    - name: Install Oh My Posh
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          curl -sS https://ohmyposh.dev/install.sh | bash -s -- -d /usr/local/bin
+        args:
+          executable: /bin/bash
+
+    - name: Fetch latest download url from GH repos
+      ansible.builtin.uri:
+        url: "{{ item }}"
+        return_content: true
+      register: github_latest
+      loop:
+        - "https://api.github.com/repos/dandavison/delta/releases/latest"
+        - "https://api.github.com/repos/sharkdp/bat/releases/latest"
+
+    - name: Install GH packages
+      ansible.builtin.apt:
+        deb: "{{ item }}"
+      loop: "{{ github_latest.results | json_query('[*].json.assets[*].browser_download_url') | flatten }}"
+      when:
+        - item is search(arch)
+        - item is search(".deb")
+        - item is not search("musl")
+
+    - name: Install fish shell
+      ansible.builtin.apt:
+        update_cache: true
+        name: fish
+        state: latest
