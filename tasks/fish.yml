@@ -1,0 +1,19 @@
+---
+- name: Ensure user config dirs exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ outer_item }}"
+    group: "{{ outer_item }}"
+    mode: '0750'
+  loop:
+    - "~/.config"
+    - "~/.config/fish"
+
+# - name: Deploy fish config template
+#   ansible.builtin.template:
+#     src: fish/config.fish.j2
+#     dest: "~/.config/fish/config.fish"
+#     owner: "{{ outer_item }}"
+#     group: "{{ outer_item }}"
+#     mode: '0644'

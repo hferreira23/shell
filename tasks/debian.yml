@@ -77,3 +77,10 @@
         update_cache: true
         name: fish
         state: latest
+
+- name: Include fish tasks
+  ansible.builtin.include_tasks:
+    file: fish.yml
+    apply:
+      become: true
+      become_user: "{{ outer_item }}"
