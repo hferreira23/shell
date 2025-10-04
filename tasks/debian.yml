@@ -43,34 +43,34 @@
         cmd: |
           set -o pipefail
           curl -sS https://webinstall.dev/zoxide | bash
-        args:
-          executable: /bin/bash
+      args:
+        executable: /bin/bash
 
     - name: Install Oh My Posh
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
           curl -sS https://ohmyposh.dev/install.sh | bash -s -- -d /usr/local/bin
-        args:
-          executable: /bin/bash
+      args:
+        executable: /bin/bash
 
-    - name: Fetch latest download url from GH repos
-      ansible.builtin.uri:
-        url: "{{ item }}"
-        return_content: true
-      register: github_latest
-      loop:
-        - "https://api.github.com/repos/dandavison/delta/releases/latest"
-        - "https://api.github.com/repos/sharkdp/bat/releases/latest"
+    # - name: Fetch latest download url from GH repos
+    #   ansible.builtin.uri:
+    #     url: "{{ item }}"
+    #     return_content: true
+    #   register: github_latest
+    #   loop:
+    #     - "https://api.github.com/repos/dandavison/delta/releases/latest"
+    #     - "https://api.github.com/repos/sharkdp/bat/releases/latest"
 
-    - name: Install GH packages
-      ansible.builtin.apt:
-        deb: "{{ item }}"
-      loop: "{{ github_latest.results | json_query('[*].json.assets[*].browser_download_url') | flatten }}"
-      when:
-        - item is search(arch)
-        - item is search(".deb")
-        - item is not search("musl")
+    # - name: Install GH packages
+    #   ansible.builtin.apt:
+    #     deb: "{{ item }}"
+    #   loop: "{{ github_latest.results | json_query('[*].json.assets[*].browser_download_url') | flatten }}"
+    #   when:
+    #     - item is search(arch)
+    #     - item is search(".deb")
+    #     - item is not search("musl")
 
     - name: Install fish shell
       ansible.builtin.apt:

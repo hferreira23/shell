@@ -1,6 +1,6 @@
 ---
 - name: Shell config for Debian based systems
-  ansible.builtin.import_tasks:
+  ansible.builtin.include_tasks:
     file: debian.yml
   loop: "{{ shell_users }}"
   loop_control:
