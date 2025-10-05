@@ -9,11 +9,48 @@
   loop:
     - "~/.config"
     - "~/.config/fish"
+    - "~/.config/oh-my-posh"
 
-# - name: Deploy fish config template
-#   ansible.builtin.template:
-#     src: fish/config.fish.j2
-#     dest: "~/.config/fish/config.fish"
-#     owner: "{{ outer_item }}"
-#     group: "{{ outer_item }}"
-#     mode: '0644'
+- name: Get dotfiles repo
+  ansible.builtin.git:
+    repo: git@github.com:hferreira23/dotfiles.git
+    dest: /tmp/dotfiles
+    version: main
+    clone: true
+    update: true
+    force: true
+    accept_hostkey: true
+    depth: 1
+    key_file: ~/.ssh/id_rsa
+  run_once: true
+  delegate_to: localhost
+  become: false
+
+- name: Install fisher
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      /usr/bin/fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'
+  args:
+    executable: /bin/bash
+
+- name: Deploy config files
+  ansible.builtin.copy:
+    src: "/tmp/dotfiles/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ outer_item }}"
+    group: "{{ outer_item }}"
+    mode: '0640'
+  loop:
+    - { src: 'fish/config.fish', dest: '~/.config/fish/config.fish' }
+    - { src: 'fish/fish_plugins', dest: '~/.config/fish/fish_plugins' }
+    - { src: 'fish/conf.d/linux.fish', dest: '~/.config/fish/conf.d/linux.fish' }
+    - { src: 'oh-my-posh/hferreira.json', dest: '~/.config/oh-my-posh/hferreira.json' }
+
+- name: Install fish plugins
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      /usr/bin/fish -c 'fisher update'
+  args:
+    executable: /bin/bash
