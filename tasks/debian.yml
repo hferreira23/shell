@@ -35,22 +35,6 @@
           - ""
         signed_by: https://download.opensuse.org/repositories/shells:fish:release:4/Debian_13/Release.key
 
-    - name: Install Pacstall
-      ansible.builtin.shell:
-        cmd: |
-          set -o pipefail
-          bash -c "$(curl -fsSL https://pacstall.dev/q/install)"
-      args:
-        executable: /bin/bash
-
-    - name: Install deb-get
-      ansible.builtin.shell:
-        cmd: |
-          set -o pipefail
-          curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | bash -s install deb-get
-      args:
-        executable: /bin/bash
-
     - name: Install Oh My Posh
       ansible.builtin.shell:
         cmd: |
@@ -82,37 +66,6 @@
         update_cache: true
         name: fish
         state: latest
-
-    - name: Install tooling packages
-      ansible.builtin.apt:
-        name:
-          - git
-          - vim
-          - htop
-          - ripgrep
-          - fd-find
-          - tmux
-          - screen
-          - tree
-          - jq
-          - gdu
-          - bat
-          - git-delta
-          - du-dust
-          - duf
-        state: latest
-
-    - name: Install tooling from pacstall
-      ansible.builtin.shell:
-        cmd: |
-          set -o pipefail
-          pacstall -IP \
-            fzf-bin \
-            lsd-deb \
-            bottom-deb \
-            zoxide-deb
-      args:
-        executable: /bin/bash
 
 - name: Include fish tasks
   ansible.builtin.include_tasks:
