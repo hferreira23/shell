@@ -25,6 +25,7 @@
   run_once: true
   delegate_to: localhost
   become: false
+  when: outer_item == root
 
 - name: Install fisher
   ansible.builtin.shell:
