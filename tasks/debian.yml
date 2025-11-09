@@ -5,12 +5,12 @@
     - name: Setting amd64 architecture
       ansible.builtin.set_fact:
         shell_arch: amd64
-      when: ansible_architecture == "x86_64"
+      when: ansible_facts.architecture == "x86_64"
 
     - name: Setting arm64 architecture
       ansible.builtin.set_fact:
         shell_arch: arm64
-      when: ansible_architecture == "aarch64"
+      when: ansible_facts.architecture == "aarch64"
 
     - name: Install prereq packages
       ansible.builtin.apt:
